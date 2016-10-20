@@ -30,9 +30,12 @@ object MoviestoreApp extends App {
   Moviestore.add(new Movie("Inglourious Basterds", FSK16))
   val ich = Moviestore.add(new Client("Oliver Braun", 42))
   printAvailableMovies()
-  println(Moviestore.rent(ich, 1))
-  printAvailableMovies()
-  Moviestore.handIn(ich, 1)
-  printAvailableMovies()
-  print(Moviestore)
+
 }
+
+/*
+println(Moviestore.rent(ich, 1))
+printAvailableMovies()
+Moviestore.handIn(ich, 1)
+printAvailableMovies()
+print(Moviestore)*/

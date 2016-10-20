@@ -21,10 +21,10 @@ object Moviestore {
   * Die Typen die in einer Map sind, werden nicht wie in Java in <>
   * geschrieben, sondern in [].
   */
+
   private var contents = Map[Serial, (Movie, Option[Serial])]()
   // Um die Seriennummer zu generieren.
   private var mSerial = 0
-
   /* Mit def beginnt eine Funktionsdefinition. Wenn die Funktion
   * keine Argumente hat, kann das leere Klammerpaar auch weg gelassen
   * werden. Eine Konvention besagt, dass eine Funktion die Nebeneffekte (z.B.
@@ -43,9 +43,13 @@ object Moviestore {
   }
 
   // TODO: hier fehlt der Code für die Seriennummer der Kunden
-
   // Für die Kunden soll es ebenfalls eine Map mit Kundennummer geben
   private var clients = Map[Serial, Client]()
+  private var cSerial = 0
+  private def nextCSerial: Serial = {
+    cSerial += 1
+    cSerial
+  }
 
   /* Um einen Film zum Bestand hinzuzufügen.
   * Diese Methode gibt nichts zurück. Das heisst in Scala Unit und
@@ -67,13 +71,14 @@ object Moviestore {
     */
     contents += nextMSerial ->(movie, None)
   }
-
   // TODO: Hier fehlt der Code um einen neuen Kunden in die Kundenmap einzufügen
   // Im Gegensatz zur Methode add für den Movie soll diese add-Methode die
   // Seriennummer des neuen Kunden als Ergebnis zurück liefern
   def add(client: Client): Serial = {
     // das return 0 kann dann natürlich nicht stehen bleiben
-    0
+    val serial = nextCSerial
+    clients += serial -> client
+    serial
   }
 
   /* Die Methode rent bekommt die Seriennummern des Kunden und des Filmes
@@ -140,7 +145,27 @@ object Moviestore {
       // Wie zu sehen ist, ist hier auch nirgends ein return notwendig.
     }
   }
+  /* Die Methode zum zurück geben eines Films fehlt wieder.
+ * Es soll true zurück gegeben werden, wenn die Rückgabe erfolgreich war
+ * und false sonst.
+ * Die Rückgabe funktioniert (und soll dann durchgeführt werden), wenn
+ * der Kunde existiert, der Film gefunden wird un dvon diesem Kunden
+ * tatsächlich ausgeliehen wurde (Nutzen Sie ==, denn es soll wirklich
+     * das selbe Objekt sein). In allen anderen Fällen wird die Rücknahme nicht
+ * akzeptiert.
+ */
+  def handIn(clientSerial: Serial, movieSerial: Int): Boolean = {
+    // TODO: Code einfügen
+    clients get clientSerial match {
+      case Some(client) =>
+        contents get movieSerial match {
+          case Some((movie))
+            contents += movieSerial -> (movie, Some(clientSerial))
 
+        }
+    }
+      false
+  }
   /* Nachdem rent im None-Fall auch immer None zurück gibt, ist es möglich
    * viel eleganter zu schreiben:
    */
@@ -181,20 +206,6 @@ object Moviestore {
     maybeMovie
   }
 
-  /* Die Methode zum zurück geben eines Films fehlt wieder.
-  * Es soll true zurück gegeben werden, wenn die Rückgabe erfolgreich war
-  * und false sonst.
-  * Die Rückgabe funktioniert (und soll dann durchgeführt werden), wenn
-  * der Kunde existiert, der Film gefunden wird un dvon diesem Kunden
-  * tatsächlich ausgeliehen wurde (Nutzen Sie ==, denn es soll wirklich
-      * das selbe Objekt sein). In allen anderen Fällen wird die Rücknahme nicht
-  * akzeptiert.
-  */
-  def handIn(clientSerial: Serial, movieSerial: Int): Boolean = {
-    // TODO: Code einfügen
-    false
-  }
-
   /* Die Methode availableMovies berechnet aus der Map aller
   * Filme, die Map, die nur verfügbare Filme enthält, in dem sie
   * alle ausgeliehenen Filme löscht. Nachdem wir mit unveränderbaren
@@ -213,11 +224,15 @@ object Moviestore {
       }
     newMap
   }
-
   // rentedMovies soll die Map mit allen ausgeliehenen berechnen.
   def rentedMovies: Map[Serial, (Movie, Option[Serial])] = {
     // TODO: Code fehlt. return contents macht natürlich gar keinen Sinn
-    contents
+    var newMap = contents
+    for {(key, (_, maybeClient)) <- contents}
+      if (maybeClient isEmpty) {
+        newMap -= key
+      }
+    newMap
   }
 
   // ganz simple Redefinition von toString
